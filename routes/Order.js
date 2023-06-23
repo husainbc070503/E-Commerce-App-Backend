@@ -5,7 +5,7 @@ const router = require('express').Router();
 const Razorpay = require('razorpay');
 const nodemailer = require('nodemailer');
 
-const sendReceipt = (totalPrice, email, order_id) => {
+const sendReceipt = async (totalPrice, email, order_id) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         port: 587,
@@ -24,9 +24,17 @@ const sendReceipt = (totalPrice, email, order_id) => {
         text: `Order Confirmed. Total Price: Rs.${totalPrice}/-. We will try to deliver your order as soon as possible. Your Order ID: ${order_id}. Thanking you.`
     }
 
-    transporter.sendMail(options)
-        .then((data) => console.log('Email sent successfully'))
-        .catch((err) => console.log(err));
+    await new Promise((resolve, reject) => {
+        transporter.sendMail(options, (err, info) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                console.log('Email sent successfully');
+                resolve(info);
+            }
+        })
+    })
 }
 
 const rzp = new Razorpay({

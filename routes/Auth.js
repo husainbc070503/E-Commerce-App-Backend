@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer');
 const Token = require('../models/Token');
 const ValidUser = require('../middleware/ValidUser');
 
-const mailer = (email, token) => {
+const mailer = async (email, token) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         port: 587,
@@ -26,9 +26,17 @@ const mailer = (email, token) => {
         text: `Your OTP for updating password is ${token}. Please don't share it with anyone`
     }
 
-    transporter.sendMail(options)
-        .then((data) => console.log('Email sent successfully'))
-        .catch((err) => console.log(err));
+    await new Promise((resolve, reject) => {
+        transporter.sendMail(options, (err, info) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                console.log('Email sent successfully.');
+                resolve(info);
+            }
+        })
+    })
 }
 
 /* REGISTRATION */
